@@ -6,6 +6,7 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
+import BN from "bn.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { providers } from "ethers";
@@ -1569,8 +1570,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     referrerAddress?: string;
     gasLimit?: number;
-    maxFeePerGas?: BigNumber;
-    maxPriorityFee?: BigNumber;
+    maxFeePerGas?: BN;
+    maxPriorityFee?: BN;
   }): Promise<string> {
     const matchingOrder = this._makeMatchingOrder({
       order,
@@ -4586,8 +4587,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     metadata?: string;
     gasLimit?: number;
-    maxFeePerGas?: BigNumber;
-    maxPriorityFee?: BigNumber;
+    maxFeePerGas?: BN;
+    maxPriorityFee?: BN;
   }) {
     let value;
     let shouldValidateBuy = true;
