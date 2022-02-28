@@ -4591,46 +4591,43 @@ export class OpenSeaSDK {
     maxPriorityFee?: BN;
   }) {
     let value;
-    // const shouldValidateBuy = true;
-    // const shouldValidateSell = true;
+    let shouldValidateBuy = true;
+    let shouldValidateSell = true;
     // Only check buy, but shouldn't matter as they should always be equal
     // const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
     // const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
 
-    // if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-    //   // USER IS THE SELLER, only validate the buy order
-    //   await this._sellOrderValidationAndApprovals({
-    //     order: sell,
-    //     accountAddress,
-    //   });
-    //   shouldValidateSell = false;
-    // } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-    //   // USER IS THE BUYER, only validate the sell order
-    //   await this._buyOrderValidationAndApprovals({
-    //     order: buy,
-    //     counterOrder: sell,
-    //     accountAddress,
-    //   });
-    //   shouldValidateBuy = false;
+    if (sell.maker.toLowerCase() === accountAddress.toLowerCase()) {
+      // USER IS THE SELLER, only validate the buy order
+      await this._sellOrderValidationAndApprovals({
+        order: sell,
+        accountAddress,
+      });
+      shouldValidateSell = false;
+    } else if (buy.maker.toLowerCase() === accountAddress.toLowerCase()) {
+      // USER IS THE BUYER, only validate the sell order
+      await this._buyOrderValidationAndApprovals({
+        order: buy,
+        counterOrder: sell,
+        accountAddress,
+      });
+      shouldValidateBuy = false;
 
-    // If using ETH to pay, set the value of the transaction to the current price
-    if (
-      buy.maker.toLowerCase() == accountAddress.toLowerCase() &&
-      buy.paymentToken == NULL_ADDRESS
-    ) {
-      value = await this._getRequiredAmountForTakingSellOrder(sell);
+      // If using ETH to pay, set the value of the transaction to the current price
+      if (buy.paymentToken == NULL_ADDRESS) {
+        value = await this._getRequiredAmountForTakingSellOrder(sell);
+      }
+    } else {
+      // User is neither - matching service
     }
-    // } else {
-    //   // User is neither - matching service
-    // }
 
-    // await this._validateMatch({
-    //   buy,
-    //   sell,
-    //   accountAddress,
-    //   shouldValidateBuy,
-    //   shouldValidateSell,
-    // });
+    await this._validateMatch({
+      buy,
+      sell,
+      accountAddress,
+      shouldValidateBuy,
+      shouldValidateSell,
+    });
 
     this._dispatch(EventType.MatchOrders, {
       buy,
