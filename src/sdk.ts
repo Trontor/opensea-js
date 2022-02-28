@@ -1587,8 +1587,8 @@ export class OpenSeaSDK {
       sell,
       accountAddress,
       metadata,
-      maxFeePerGas: maxFeePerGas?.toString(),
-      maxPriorityFee: maxPriorityFee?.toString(),
+      maxFeePerGas,
+      maxPriorityFee,
       gasLimit,
     });
 
@@ -4587,8 +4587,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     metadata?: string;
     gasLimit?: number;
-    maxFeePerGas?: string;
-    maxPriorityFee?: string;
+    maxFeePerGas?: BN;
+    maxPriorityFee?: BN;
   }) {
     let value;
     // const shouldValidateBuy = true;
@@ -4743,7 +4743,7 @@ export class OpenSeaSDK {
     if (maxPriorityFee) {
       this.logger(
         `Fulfilling order with maxPriorityFeePerGas set to ${(
-          txnData.maxPriorityFeePerGas as BN
+          maxPriorityFee as BN
         ).toString(10)}`
       );
       txnData.maxPriorityFeePerGas = maxPriorityFee;
@@ -4751,8 +4751,8 @@ export class OpenSeaSDK {
 
     if (maxFeePerGas) {
       this.logger(
-        `Fulfilling order with maxPriorityFeePerGas set to ${(
-          txnData.maxFeePerGas as BN
+        `Fulfilling order with maxFeePerGas set to ${(
+          maxFeePerGas as BN
         ).toString(10)}`
       );
       txnData.maxFeePerGas = maxFeePerGas;
