@@ -4613,10 +4613,13 @@ export class OpenSeaSDK {
     //   });
     //   shouldValidateBuy = false;
 
-    //   // If using ETH to pay, set the value of the transaction to the current price
-    //   if (buy.paymentToken == NULL_ADDRESS) {
-    //     value = await this._getRequiredAmountForTakingSellOrder(sell);
-    //   }
+    // If using ETH to pay, set the value of the transaction to the current price
+    if (
+      buy.maker.toLowerCase() == accountAddress.toLowerCase() &&
+      buy.paymentToken == NULL_ADDRESS
+    ) {
+      value = await this._getRequiredAmountForTakingSellOrder(sell);
+    }
     // } else {
     //   // User is neither - matching service
     // }
@@ -4738,10 +4741,20 @@ export class OpenSeaSDK {
     }
 
     if (maxPriorityFee) {
+      this.logger(
+        `Fulfilling order with maxPriorityFeePerGas set to ${(
+          txnData.maxPriorityFeePerGas as BN
+        ).toString(10)}`
+      );
       txnData.maxPriorityFeePerGas = maxPriorityFee;
     }
 
     if (maxFeePerGas) {
+      this.logger(
+        `Fulfilling order with maxPriorityFeePerGas set to ${(
+          txnData.maxFeePerGas as BN
+        ).toString(10)}`
+      );
       txnData.maxFeePerGas = maxFeePerGas;
     }
 
