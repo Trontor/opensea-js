@@ -1587,8 +1587,8 @@ export class OpenSeaSDK {
       sell,
       accountAddress,
       metadata,
-      maxFeePerGas,
-      maxPriorityFee,
+      maxFeePerGas: maxFeePerGas?.toString(),
+      maxPriorityFee: maxPriorityFee?.toString(),
       gasLimit,
     });
 
@@ -4587,45 +4587,47 @@ export class OpenSeaSDK {
     accountAddress: string;
     metadata?: string;
     gasLimit?: number;
-    maxFeePerGas?: BN;
-    maxPriorityFee?: BN;
+    maxFeePerGas?: string;
+    maxPriorityFee?: string;
   }) {
     let value;
-    let shouldValidateBuy = true;
-    let shouldValidateSell = true;
-
+    // const shouldValidateBuy = true;
+    // const shouldValidateSell = true;
     // Only check buy, but shouldn't matter as they should always be equal
-    if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE SELLER, only validate the buy order
-      await this._sellOrderValidationAndApprovals({
-        order: sell,
-        accountAddress,
-      });
-      shouldValidateSell = false;
-    } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE BUYER, only validate the sell order
-      await this._buyOrderValidationAndApprovals({
-        order: buy,
-        counterOrder: sell,
-        accountAddress,
-      });
-      shouldValidateBuy = false;
+    // const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+    // const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
 
-      // If using ETH to pay, set the value of the transaction to the current price
-      if (buy.paymentToken == NULL_ADDRESS) {
-        value = await this._getRequiredAmountForTakingSellOrder(sell);
-      }
-    } else {
-      // User is neither - matching service
-    }
+    // if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
+    //   // USER IS THE SELLER, only validate the buy order
+    //   await this._sellOrderValidationAndApprovals({
+    //     order: sell,
+    //     accountAddress,
+    //   });
+    //   shouldValidateSell = false;
+    // } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
+    //   // USER IS THE BUYER, only validate the sell order
+    //   await this._buyOrderValidationAndApprovals({
+    //     order: buy,
+    //     counterOrder: sell,
+    //     accountAddress,
+    //   });
+    //   shouldValidateBuy = false;
 
-    await this._validateMatch({
-      buy,
-      sell,
-      accountAddress,
-      shouldValidateBuy,
-      shouldValidateSell,
-    });
+    //   // If using ETH to pay, set the value of the transaction to the current price
+    //   if (buy.paymentToken == NULL_ADDRESS) {
+    //     value = await this._getRequiredAmountForTakingSellOrder(sell);
+    //   }
+    // } else {
+    //   // User is neither - matching service
+    // }
+
+    // await this._validateMatch({
+    //   buy,
+    //   sell,
+    //   accountAddress,
+    //   shouldValidateBuy,
+    //   shouldValidateSell,
+    // });
 
     this._dispatch(EventType.MatchOrders, {
       buy,
