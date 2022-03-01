@@ -4605,9 +4605,7 @@ export class OpenSeaSDK {
       });
       shouldValidateSell = false;
       this.logger(
-        `TokenId=${
-          sell.asset?.tokenId || ""
-        }: Sell order validated and approved`
+        `TokenId=${buy.asset?.tokenId || ""}: Sell order validated and approved`
       );
     } else if (buy.maker.toLowerCase() === accountAddress.toLowerCase()) {
       // USER IS THE BUYER, only validate the sell order
@@ -4623,7 +4621,7 @@ export class OpenSeaSDK {
         value = await this._getRequiredAmountForTakingSellOrder(sell);
       }
       this.logger(
-        `TokenId=${buy.asset?.tokenId || ""}: Buy order validated and approved`
+        `TokenId=${sell.asset?.tokenId || ""}: Buy order validated and approved`
       );
     } else {
       // User is neither - matching service
@@ -4633,8 +4631,8 @@ export class OpenSeaSDK {
       this.logger(
         `TokenId=${
           shouldValidateBuy
-            ? sell.asset?.tokenId || ""
-            : buy.asset?.tokenId || ""
+            ? buy.asset?.tokenId || ""
+            : sell.asset?.tokenId || ""
         }: ${str}`
       );
 
