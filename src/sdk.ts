@@ -4604,6 +4604,11 @@ export class OpenSeaSDK {
         accountAddress,
       });
       shouldValidateSell = false;
+      this.logger(
+        `TokenId=${
+          sell.asset?.tokenId || ""
+        }: Sell order validated and approved`
+      );
     } else if (buy.maker.toLowerCase() === accountAddress.toLowerCase()) {
       // USER IS THE BUYER, only validate the sell order
       await this._buyOrderValidationAndApprovals({
@@ -4617,9 +4622,21 @@ export class OpenSeaSDK {
       if (buy.paymentToken == NULL_ADDRESS) {
         value = await this._getRequiredAmountForTakingSellOrder(sell);
       }
+      this.logger(
+        `TokenId=${buy.asset?.tokenId || ""}: Buy order validated and approved`
+      );
     } else {
       // User is neither - matching service
     }
+
+    const tokenLog = (str: string) =>
+      this.logger(
+        `TokenId=${
+          shouldValidateBuy
+            ? sell.asset?.tokenId || ""
+            : buy.asset?.tokenId || ""
+        }: ${str}`
+      );
 
     await this._validateMatch({
       buy,
@@ -4628,6 +4645,8 @@ export class OpenSeaSDK {
       shouldValidateBuy,
       shouldValidateSell,
     });
+
+    tokenLog("Validated match");
 
     this._dispatch(EventType.MatchOrders, {
       buy,
@@ -4707,6 +4726,7 @@ export class OpenSeaSDK {
       txnData.gas = gasLimit;
     } else {
       try {
+        tokenLog("Going to estimate gas");
         // Typescript splat doesn't typecheck
         const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange
           .atomicMatch_(
@@ -4724,9 +4744,13 @@ export class OpenSeaSDK {
           )
           .estimateGasAsync(txnData);
 
+        tokenLog("Estimated gas");
+
         txnData.gas = this._correctGasAmount(gasEstimate);
       } catch (error) {
         console.error(`Failed atomic match with args: `, args, error);
+        tokenLog("Failed atomic match with args");
+
         throw new Error(
           `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${
             error instanceof Error
@@ -4738,7 +4762,7 @@ export class OpenSeaSDK {
     }
 
     if (maxPriorityFee) {
-      this.logger(
+      tokenLog(
         `Fulfilling order with maxPriorityFeePerGas set to ${(
           maxPriorityFee as BN
         ).toString(10)}`
@@ -4747,7 +4771,7 @@ export class OpenSeaSDK {
     }
 
     if (maxFeePerGas) {
-      this.logger(
+      tokenLog(
         `Fulfilling order with maxFeePerGas set to ${(
           maxFeePerGas as BN
         ).toString(10)}`
