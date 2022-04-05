@@ -1012,7 +1012,7 @@ export class OpenSeaSDK {
       ...hashedOrder,
       ...signature,
     };
-    return this.validateAndPostOrder(orderWithSignature);
+    return orderWithSignature;
   }
 
   /**
