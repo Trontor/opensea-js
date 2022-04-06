@@ -107,6 +107,7 @@ import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
+  OpenSeaCollection,
   OpenSeaFungibleToken,
   Order,
   OrderSide,
@@ -956,6 +957,7 @@ export class OpenSeaSDK {
    */
   public async createBuyOrderLegacyWyvern({
     asset,
+    collection,
     accountAddress,
     startAmount,
     quantity = 1,
@@ -965,6 +967,7 @@ export class OpenSeaSDK {
     referrerAddress,
   }: {
     asset: Asset;
+    collection: OpenSeaCollection;
     accountAddress: string;
     startAmount: number;
     quantity?: number;
@@ -982,6 +985,7 @@ export class OpenSeaSDK {
 
     const order = await this._makeBuyOrder({
       asset,
+      collection,
       quantity,
       accountAddress,
       startAmount,
@@ -2707,6 +2711,62 @@ export class OpenSeaSDK {
     };
   }
 
+  public async computeCollectionBuyFees({
+    collection,
+  }: {
+    collection: OpenSeaCollection;
+    accountAddress?: string;
+    extraBountyBasisPoints?: number;
+  }): Promise<ComputedFees> {
+    let openseaBuyerFeeBasisPoints = DEFAULT_BUYER_FEE_BASIS_POINTS;
+    let openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
+    let devBuyerFeeBasisPoints = 0;
+    let devSellerFeeBasisPoints = 0;
+    const transferFee = makeBigNumber(0);
+    const transferFeeTokenAddress = null;
+    let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY;
+
+    openseaBuyerFeeBasisPoints = +collection.openseaBuyerFeeBasisPoints;
+    openseaSellerFeeBasisPoints = +collection.openseaSellerFeeBasisPoints;
+    devBuyerFeeBasisPoints = +collection.devBuyerFeeBasisPoints;
+    devSellerFeeBasisPoints = +collection.devSellerFeeBasisPoints;
+
+    maxTotalBountyBPS = openseaSellerFeeBasisPoints;
+
+    // Compute bounty
+    const sellerBountyBasisPoints = 0;
+
+    // Check that bounty is in range of the opensea fee
+    const bountyTooLarge =
+      sellerBountyBasisPoints + OPENSEA_SELLER_BOUNTY_BASIS_POINTS >
+      maxTotalBountyBPS;
+    if (sellerBountyBasisPoints > 0 && bountyTooLarge) {
+      let errorMessage = `Total bounty exceeds the maximum for this asset type (${
+        maxTotalBountyBPS / 100
+      }%).`;
+      if (maxTotalBountyBPS >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
+        errorMessage += ` Remember that OpenSea will add ${
+          OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100
+        }% for referrers with OpenSea accounts!`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return {
+      totalBuyerFeeBasisPoints:
+        openseaBuyerFeeBasisPoints + devBuyerFeeBasisPoints,
+      totalSellerFeeBasisPoints:
+        openseaSellerFeeBasisPoints + devSellerFeeBasisPoints,
+      openseaBuyerFeeBasisPoints,
+      openseaSellerFeeBasisPoints,
+      devBuyerFeeBasisPoints,
+      devSellerFeeBasisPoints,
+      sellerBountyBasisPoints,
+      transferFee,
+      transferFeeTokenAddress,
+    };
+  }
+
   /**
    * Post an order to the OpenSea orderbook.
    * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
@@ -3019,6 +3079,7 @@ export class OpenSeaSDK {
 
   public async _makeBuyOrder({
     asset,
+    collection,
     quantity,
     accountAddress,
     startAmount,
@@ -3029,6 +3090,7 @@ export class OpenSeaSDK {
     referrerAddress,
   }: {
     asset: Asset;
+    collection: OpenSeaCollection;
     quantity: number;
     accountAddress: string;
     startAmount: number;
@@ -3046,15 +3108,14 @@ export class OpenSeaSDK {
     );
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
 
-    const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset);
+    // const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset);
 
     const taker = sellOrder ? sellOrder.maker : NULL_ADDRESS;
 
     const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
-      await this.computeFees({
-        asset: openSeaAsset,
+      await this.computeCollectionBuyFees({
+        collection,
         extraBountyBasisPoints,
-        side: OrderSide.Buy,
       });
 
     const {
@@ -3090,11 +3151,8 @@ export class OpenSeaSDK {
       expirationTimestamp: expirationTime,
     });
 
-    const { staticTarget, staticExtradata } =
-      await this._getStaticCallTargetAndExtraData({
-        asset: openSeaAsset,
-        useTxnOriginStaticCall: false,
-      });
+    const staticTarget = NULL_ADDRESS;
+    const staticExtradata = "0x";
 
     return {
       exchange:
