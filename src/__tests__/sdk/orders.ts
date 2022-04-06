@@ -38,16 +38,11 @@ import {
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CK_RINKEBY_TOKEN_ID,
-  CK_TOKEN_ID,
   CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
   DEVIN_ADDRESS,
   DIGITAL_ART_CHAIN_ADDRESS,
   DIGITAL_ART_CHAIN_TOKEN_ID,
   DISSOLUTION_TOKEN_ID,
-  ENS_HELLO_NAME,
-  ENS_HELLO_TOKEN_ID,
-  ENS_RINKEBY_SHORT_NAME_OWNER,
-  ENS_RINKEBY_TOKEN_ADDRESS,
   MAINNET_API_KEY,
   MYTHEREUM_ADDRESS,
   MYTHEREUM_TOKEN_ID,
@@ -310,31 +305,30 @@ suite("SDK: orders", () => {
     }
   });
 
-  test("Correctly errors for invalid buy order price parameters", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const currentSeconds = Math.round(Date.now() / 1000);
-    const expirationTime = currentSeconds + 20 * 60; // 20 minutes from now
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //   test("Correctly errors for invalid buy order price parameters", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const expirationTime = Math.round(Date.now() / 1000 + 60); // one minute from now
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    try {
-      await client._makeBuyOrder({
-        asset: { tokenAddress, tokenId },
-        quantity: 1,
-        accountAddress,
-        startAmount: 2,
-        extraBountyBasisPoints: 0,
-        expirationTime,
-        paymentTokenAddress: NULL_ADDRESS,
-      });
-      assert.fail();
-    } catch (error) {
-      assert.include(
-        (error as Error).message,
-        "Offers must use wrapped ETH or an ERC-20 token"
-      );
-    }
-  });
+  //     try {
+  //       await client._makeBuyOrder({
+  //         asset: { tokenAddress, tokenId },
+  //         quantity: 1,
+  //         accountAddress,
+  //         startAmount: 2,
+  //         extraBountyBasisPoints: 0,
+  //         expirationTime,
+  //         paymentTokenAddress: NULL_ADDRESS,
+  //       });
+  //       assert.fail();
+  //     } catch (error) {
+  //       assert.include(
+  //         (error as Error).message,
+  //         "Offers must use wrapped ETH or an ERC-20 token"
+  //       );
+  //     }
+  //   });
 
   test("Cannot yet match a new English auction sell order, bountied", async () => {
     const accountAddress = ALEX_ADDRESS;
@@ -448,220 +442,220 @@ suite("SDK: orders", () => {
     console.info(`Match gas cost: ${gas}`);
   });
 
-  test("Ensures buy order compatibility with an English sell order", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const takerAddress = ALEX_ADDRESS;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
-    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
-    const extraBountyBasisPoints = 1.1 * 100;
+  //   test("Ensures buy order compatibility with an English sell order", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const takerAddress = ALEX_ADDRESS;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
+  //     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+  //     const extraBountyBasisPoints = 1.1 * 100;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+  //     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
-    const sellOrder = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      quantity: 1,
-      accountAddress: takerAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      expirationTime,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true,
-    });
+  //     const sellOrder = await client._makeSellOrder({
+  //       asset: { tokenAddress, tokenId },
+  //       quantity: 1,
+  //       accountAddress: takerAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress,
+  //       expirationTime,
+  //       extraBountyBasisPoints,
+  //       buyerAddress: NULL_ADDRESS,
+  //       waitForHighestBid: true,
+  //     });
 
-    const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-      sellOrder,
-    });
+  //     const buyOrder = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //       sellOrder,
+  //     });
 
-    testFeesMakerOrder(buyOrder, asset.collection);
-    assert.equal(sellOrder.taker, NULL_ADDRESS);
-    assert.equal(buyOrder.taker, sellOrder.maker);
-    assert.equal(
-      buyOrder.makerRelayerFee.toNumber(),
-      sellOrder.makerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerRelayerFee.toNumber(),
-      sellOrder.takerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.makerProtocolFee.toNumber(),
-      sellOrder.makerProtocolFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerProtocolFee.toNumber(),
-      sellOrder.takerProtocolFee.toNumber()
-    );
+  //     testFeesMakerOrder(buyOrder, asset.collection);
+  //     assert.equal(sellOrder.taker, NULL_ADDRESS);
+  //     assert.equal(buyOrder.taker, sellOrder.maker);
+  //     assert.equal(
+  //       buyOrder.makerRelayerFee.toNumber(),
+  //       sellOrder.makerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerRelayerFee.toNumber(),
+  //       sellOrder.takerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.makerProtocolFee.toNumber(),
+  //       sellOrder.makerProtocolFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerProtocolFee.toNumber(),
+  //       sellOrder.takerProtocolFee.toNumber()
+  //     );
 
-    await client._buyOrderValidationAndApprovals({
-      order: buyOrder,
-      accountAddress,
-    });
-    await client._sellOrderValidationAndApprovals({
-      order: sellOrder,
-      accountAddress: takerAddress,
-    });
-  });
+  //     await client._buyOrderValidationAndApprovals({
+  //       order: buyOrder,
+  //       accountAddress,
+  //     });
+  //     await client._sellOrderValidationAndApprovals({
+  //       order: sellOrder,
+  //       accountAddress: takerAddress,
+  //     });
+  //   });
 
-  test("Ensures ERC721v3 buy order compatibility with an English sell order", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const takerAddress = ALEX_ADDRESS;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
-    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
-    const extraBountyBasisPoints = 1.1 * 100;
+  //   test("Ensures ERC721v3 buy order compatibility with an English sell order", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const takerAddress = ALEX_ADDRESS;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
+  //     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+  //     const extraBountyBasisPoints = 1.1 * 100;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+  //     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
-    const sellOrder = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      quantity: 1,
-      accountAddress: takerAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      expirationTime,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true,
-    });
+  //     const sellOrder = await client._makeSellOrder({
+  //       asset: { tokenAddress, tokenId },
+  //       quantity: 1,
+  //       accountAddress: takerAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress,
+  //       expirationTime,
+  //       extraBountyBasisPoints,
+  //       buyerAddress: NULL_ADDRESS,
+  //       waitForHighestBid: true,
+  //     });
 
-    const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-      sellOrder,
-    });
+  //     const buyOrder = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //       sellOrder,
+  //     });
 
-    testFeesMakerOrder(buyOrder, asset.collection);
-    assert.equal(sellOrder.taker, NULL_ADDRESS);
-    assert.equal(buyOrder.taker, sellOrder.maker);
-    assert.equal(
-      buyOrder.makerRelayerFee.toNumber(),
-      sellOrder.makerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerRelayerFee.toNumber(),
-      sellOrder.takerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.makerProtocolFee.toNumber(),
-      sellOrder.makerProtocolFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerProtocolFee.toNumber(),
-      sellOrder.takerProtocolFee.toNumber()
-    );
+  //     testFeesMakerOrder(buyOrder, asset.collection);
+  //     assert.equal(sellOrder.taker, NULL_ADDRESS);
+  //     assert.equal(buyOrder.taker, sellOrder.maker);
+  //     assert.equal(
+  //       buyOrder.makerRelayerFee.toNumber(),
+  //       sellOrder.makerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerRelayerFee.toNumber(),
+  //       sellOrder.takerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.makerProtocolFee.toNumber(),
+  //       sellOrder.makerProtocolFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerProtocolFee.toNumber(),
+  //       sellOrder.takerProtocolFee.toNumber()
+  //     );
 
-    await client._buyOrderValidationAndApprovals({
-      order: buyOrder,
-      accountAddress,
-    });
-    await client._sellOrderValidationAndApprovals({
-      order: sellOrder,
-      accountAddress: takerAddress,
-    });
-  });
+  //     await client._buyOrderValidationAndApprovals({
+  //       order: buyOrder,
+  //       accountAddress,
+  //     });
+  //     await client._sellOrderValidationAndApprovals({
+  //       order: sellOrder,
+  //       accountAddress: takerAddress,
+  //     });
+  //   });
 
-  test("Ensures buy order compatibility with an ERC721v3 English sell order", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const takerAddress = ALEX_ADDRESS;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
-    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
-    const extraBountyBasisPoints = 1.1 * 100;
+  //   test("Ensures buy order compatibility with an ERC721v3 English sell order", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const takerAddress = ALEX_ADDRESS;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
+  //     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+  //     const extraBountyBasisPoints = 1.1 * 100;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+  //     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
-    const sellOrder = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
-      quantity: 1,
-      accountAddress: takerAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      expirationTime,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true,
-    });
+  //     const sellOrder = await client._makeSellOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
+  //       quantity: 1,
+  //       accountAddress: takerAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress,
+  //       expirationTime,
+  //       extraBountyBasisPoints,
+  //       buyerAddress: NULL_ADDRESS,
+  //       waitForHighestBid: true,
+  //     });
 
-    const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-      sellOrder,
-    });
+  //     const buyOrder = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //       sellOrder,
+  //     });
 
-    testFeesMakerOrder(buyOrder, asset.collection);
-    assert.equal(sellOrder.taker, NULL_ADDRESS);
-    assert.equal(buyOrder.taker, sellOrder.maker);
-    assert.equal(
-      buyOrder.makerRelayerFee.toNumber(),
-      sellOrder.makerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerRelayerFee.toNumber(),
-      sellOrder.takerRelayerFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.makerProtocolFee.toNumber(),
-      sellOrder.makerProtocolFee.toNumber()
-    );
-    assert.equal(
-      buyOrder.takerProtocolFee.toNumber(),
-      sellOrder.takerProtocolFee.toNumber()
-    );
+  //     testFeesMakerOrder(buyOrder, asset.collection);
+  //     assert.equal(sellOrder.taker, NULL_ADDRESS);
+  //     assert.equal(buyOrder.taker, sellOrder.maker);
+  //     assert.equal(
+  //       buyOrder.makerRelayerFee.toNumber(),
+  //       sellOrder.makerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerRelayerFee.toNumber(),
+  //       sellOrder.takerRelayerFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.makerProtocolFee.toNumber(),
+  //       sellOrder.makerProtocolFee.toNumber()
+  //     );
+  //     assert.equal(
+  //       buyOrder.takerProtocolFee.toNumber(),
+  //       sellOrder.takerProtocolFee.toNumber()
+  //     );
 
-    await client._buyOrderValidationAndApprovals({
-      order: buyOrder,
-      accountAddress,
-    });
-    await client._sellOrderValidationAndApprovals({
-      order: sellOrder,
-      accountAddress: takerAddress,
-    });
-  });
+  //     await client._buyOrderValidationAndApprovals({
+  //       order: buyOrder,
+  //       accountAddress,
+  //     });
+  //     await client._sellOrderValidationAndApprovals({
+  //       order: sellOrder,
+  //       accountAddress: takerAddress,
+  //     });
+  //   });
 
-  test.skip("Creates ENS name buy order", async () => {
-    const paymentTokenAddress = WETH_ADDRESS;
-    const _buyOrder = await rinkebyClient._makeBuyOrder({
-      asset: {
-        tokenId: ENS_HELLO_TOKEN_ID,
-        tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
-        name: ENS_HELLO_NAME,
-        schemaName: WyvernSchemaName.ENSShortNameAuction,
-      },
-      quantity: 1,
-      accountAddress: ENS_RINKEBY_SHORT_NAME_OWNER,
-      paymentTokenAddress,
-      startAmount: 0.01,
-      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24), // one day from now
-      extraBountyBasisPoints: 0,
-    });
-    // TODO (joshuawu): Fill this test out after backend supports ENS short names.
-    // assert.equal(buyOrder, {})
-  });
+  //   test.skip("Creates ENS name buy order", async () => {
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const _buyOrder = await rinkebyClient._makeBuyOrder({
+  //       asset: {
+  //         tokenId: ENS_HELLO_TOKEN_ID,
+  //         tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
+  //         name: ENS_HELLO_NAME,
+  //         schemaName: WyvernSchemaName.ENSShortNameAuction,
+  //       },
+  //       quantity: 1,
+  //       accountAddress: ENS_RINKEBY_SHORT_NAME_OWNER,
+  //       paymentTokenAddress,
+  //       startAmount: 0.01,
+  //       expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24), // one day from now
+  //       extraBountyBasisPoints: 0,
+  //     });
+  //     // TODO (joshuawu): Fill this test out after backend supports ENS short names.
+  //     // assert.equal(buyOrder, {})
+  //   });
 
   test("Matches a private sell order, doesn't for wrong taker", async () => {
     const accountAddress = ALEX_ADDRESS;
@@ -778,43 +772,43 @@ suite("SDK: orders", () => {
     await testMatchingNewOrder(order, takerAddress);
   });
 
-  test("Matches a buy order of an 1155 item for W-ETH", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const takerAddress = ALEX_ADDRESS;
-    const paymentToken = WETH_ADDRESS;
-    const amountInToken = 0.01;
+  //   test("Matches a buy order of an 1155 item for W-ETH", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const takerAddress = ALEX_ADDRESS;
+  //     const paymentToken = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
 
-    const tokenId = DISSOLUTION_TOKEN_ID;
-    const tokenAddress = ENJIN_ADDRESS;
+  //     const tokenId = DISSOLUTION_TOKEN_ID;
+  //     const tokenAddress = ENJIN_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+  //     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
-    const order = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
-      quantity: 1,
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress: paymentToken,
-      extraBountyBasisPoints: 0,
-    });
+  //     const order = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress: paymentToken,
+  //       extraBountyBasisPoints: 0,
+  //     });
 
-    assert.equal(order.taker, NULL_ADDRESS);
-    assert.equal(order.paymentToken, paymentToken);
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken);
-    assert.equal(order.extra.toNumber(), 0);
-    assert.notEqual(order.expirationTime.toNumber(), 0);
-    assert.isTrue(
-      areTimestampsNearlyEqual(
-        getMaxOrderExpirationTimestamp(),
-        order.expirationTime.toNumber()
-      )
-    );
-    testFeesMakerOrder(order, asset.collection);
+  //     assert.equal(order.taker, NULL_ADDRESS);
+  //     assert.equal(order.paymentToken, paymentToken);
+  //     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken);
+  //     assert.equal(order.extra.toNumber(), 0);
+  //     assert.notEqual(order.expirationTime.toNumber(), 0);
+  //     assert.isTrue(
+  //       areTimestampsNearlyEqual(
+  //         getMaxOrderExpirationTimestamp(),
+  //         order.expirationTime.toNumber()
+  //       )
+  //     );
+  //     testFeesMakerOrder(order, asset.collection);
 
-    await client._buyOrderValidationAndApprovals({ order, accountAddress });
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress);
-  });
+  //     await client._buyOrderValidationAndApprovals({ order, accountAddress });
+  //     // Make sure match is valid
+  //     await testMatchingNewOrder(order, takerAddress);
+  //   });
 
   test("Matches a new bountied sell order for an ERC-20 token (MANA)", async () => {
     const accountAddress = ALEX_ADDRESS;
@@ -860,47 +854,47 @@ suite("SDK: orders", () => {
     await testMatchingNewOrder(order, takerAddress);
   });
 
-  test("Matches a buy order with an ERC-20 token (DAI)", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const takerAddress = ALEX_ADDRESS_2;
-    const paymentToken = (await client.api.getPaymentTokens({ symbol: "DAI" }))
-      .tokens[0];
-    const amountInToken = 3;
+  //   test("Matches a buy order with an ERC-20 token (DAI)", async () => {
+  //     const accountAddress = ALEX_ADDRESS;
+  //     const takerAddress = ALEX_ADDRESS_2;
+  //     const paymentToken = (await client.api.getPaymentTokens({ symbol: "DAI" }))
+  //       .tokens[0];
+  //     const amountInToken = 3;
 
-    const tokenId = CK_TOKEN_ID.toString();
-    const tokenAddress = CK_ADDRESS;
+  //     const tokenId = CK_TOKEN_ID.toString();
+  //     const tokenAddress = CK_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+  //     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
-    const order = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId },
-      quantity: 1,
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress: paymentToken.address,
-      extraBountyBasisPoints: 0,
-    });
+  //     const order = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId },
+  //       quantity: 1,
+  //       accountAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress: paymentToken.address,
+  //       extraBountyBasisPoints: 0,
+  //     });
 
-    assert.equal(order.taker, NULL_ADDRESS);
-    assert.equal(order.paymentToken, paymentToken.address);
-    assert.equal(
-      order.basePrice.toNumber(),
-      Math.pow(10, paymentToken.decimals) * amountInToken
-    );
-    assert.equal(order.extra.toNumber(), 0);
-    assert.notEqual(order.expirationTime.toNumber(), 0);
-    assert.isTrue(
-      areTimestampsNearlyEqual(
-        getMaxOrderExpirationTimestamp(),
-        order.expirationTime.toNumber()
-      )
-    );
-    testFeesMakerOrder(order, asset.collection);
+  //     assert.equal(order.taker, NULL_ADDRESS);
+  //     assert.equal(order.paymentToken, paymentToken.address);
+  //     assert.equal(
+  //       order.basePrice.toNumber(),
+  //       Math.pow(10, paymentToken.decimals) * amountInToken
+  //     );
+  //     assert.equal(order.extra.toNumber(), 0);
+  //     assert.notEqual(order.expirationTime.toNumber(), 0);
+  //     assert.isTrue(
+  //       areTimestampsNearlyEqual(
+  //         getMaxOrderExpirationTimestamp(),
+  //         order.expirationTime.toNumber()
+  //       )
+  //     );
+  //     testFeesMakerOrder(order, asset.collection);
 
-    await client._buyOrderValidationAndApprovals({ order, accountAddress });
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress);
-  });
+  //     await client._buyOrderValidationAndApprovals({ order, accountAddress });
+  //     // Make sure match is valid
+  //     await testMatchingNewOrder(order, takerAddress);
+  //   });
 
   test("Serializes payment token and matches most recent ERC-20 sell order", async () => {
     const takerAddress = ALEX_ADDRESS;
@@ -1136,283 +1130,283 @@ suite("SDK: orders", () => {
     assert.equal(order.howToCall, HowToCall.DelegateCall);
   });
 
-  test("Correct order data on merkle ERC721 offer", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
+  //   test("Correct order data on merkle ERC721 offer", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const order = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-    });
+  //     const order = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //     });
 
-    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
-    assert.equal(
-      order["replacementPattern"],
-      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    );
-    assert.equal(order.howToCall, HowToCall.DelegateCall);
-  });
+  //     assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+  //     assert.equal(
+  //       order["replacementPattern"],
+  //       "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  //     );
+  //     assert.equal(order.howToCall, HowToCall.DelegateCall);
+  //   });
 
-  test("Correct order data on merkle ERC1155 offer", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
+  //   test("Correct order data on merkle ERC1155 offer", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const order = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-    });
+  //     const order = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //     });
 
-    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
-    assert.equal(
-      order["replacementPattern"],
-      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    );
-    assert.equal(order.howToCall, HowToCall.DelegateCall);
-  });
+  //     assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+  //     assert.equal(
+  //       order["replacementPattern"],
+  //       "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  //     );
+  //     assert.equal(order.howToCall, HowToCall.DelegateCall);
+  //   });
 
-  test("Verify no merkle data on ERC721 english auction listing and bids", async () => {
-    const accountAddress = ALEX_ADDRESS_2;
-    const takerAddress = ALEX_ADDRESS;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const amountInToken = 0.01;
-    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
-    const extraBountyBasisPoints = 1.1 * 100;
+  //   test("Verify no merkle data on ERC721 english auction listing and bids", async () => {
+  //     const accountAddress = ALEX_ADDRESS_2;
+  //     const takerAddress = ALEX_ADDRESS;
+  //     const paymentTokenAddress = WETH_ADDRESS;
+  //     const amountInToken = 0.01;
+  //     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+  //     const extraBountyBasisPoints = 1.1 * 100;
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
+  //     const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const sellOrder = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      quantity: 1,
-      accountAddress: takerAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      expirationTime,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true,
-    });
+  //     const sellOrder = await client._makeSellOrder({
+  //       asset: { tokenAddress, tokenId },
+  //       quantity: 1,
+  //       accountAddress: takerAddress,
+  //       startAmount: amountInToken,
+  //       paymentTokenAddress,
+  //       expirationTime,
+  //       extraBountyBasisPoints,
+  //       buyerAddress: NULL_ADDRESS,
+  //       waitForHighestBid: true,
+  //     });
 
-    assert.equal(sellOrder["target"], tokenAddress);
-    assert.equal(
-      sellOrder["replacementPattern"],
-      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000"
-    );
-    assert.equal(sellOrder.howToCall, HowToCall.Call);
+  //     assert.equal(sellOrder["target"], tokenAddress);
+  //     assert.equal(
+  //       sellOrder["replacementPattern"],
+  //       "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000"
+  //     );
+  //     assert.equal(sellOrder.howToCall, HowToCall.Call);
 
-    const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
-      quantity: 1,
-      accountAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: 0,
-      sellOrder,
-    });
+  //     const buyOrder = await client._makeBuyOrder({
+  //       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+  //       quantity: 1,
+  //       accountAddress,
+  //       paymentTokenAddress,
+  //       startAmount: amountInToken,
+  //       extraBountyBasisPoints: 0,
+  //       sellOrder,
+  //     });
 
-    assert.equal(buyOrder["target"], tokenAddress);
-    assert.equal(
-      buyOrder["replacementPattern"],
-      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    );
-    assert.equal(buyOrder.howToCall, HowToCall.Call);
-  });
+  //     assert.equal(buyOrder["target"], tokenAddress);
+  //     assert.equal(
+  //       buyOrder["replacementPattern"],
+  //       "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  //     );
+  //     assert.equal(buyOrder.howToCall, HowToCall.Call);
+  //   });
 
-  suite("Expiration times", () => {
-    test("it fails when expiration time is 0", async () => {
-      const accountAddress = ALEX_ADDRESS;
-      const paymentTokenAddress = manaAddress;
-      const tokenId = MYTHEREUM_TOKEN_ID.toString();
-      const tokenAddress = MYTHEREUM_ADDRESS;
+  //   suite("Expiration times", () => {
+  //     test("it fails when expiration time is 0", async () => {
+  //       const accountAddress = ALEX_ADDRESS;
+  //       const paymentTokenAddress = manaAddress;
+  //       const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //       const tokenAddress = MYTHEREUM_ADDRESS;
 
-      try {
-        await client._makeSellOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          buyerAddress: NULL_ADDRESS,
-          paymentTokenAddress,
-          waitForHighestBid: false,
-          expirationTime: 0,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include((error as Error).message, "Expiration time cannot be 0");
-      }
+  //       try {
+  //         await client._makeSellOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           buyerAddress: NULL_ADDRESS,
+  //           paymentTokenAddress,
+  //           waitForHighestBid: false,
+  //           expirationTime: 0,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include((error as Error).message, "Expiration time cannot be 0");
+  //       }
 
-      try {
-        await client._makeBuyOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          paymentTokenAddress,
-          expirationTime: 0,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include((error as Error).message, "Expiration time cannot be 0");
-      }
-    });
+  //       try {
+  //         await client._makeBuyOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           paymentTokenAddress,
+  //           expirationTime: 0,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include((error as Error).message, "Expiration time cannot be 0");
+  //       }
+  //     });
 
-    test("it fails when expiration time exceeds six months", async () => {
-      const accountAddress = ALEX_ADDRESS;
-      const paymentTokenAddress = manaAddress;
-      const tokenId = MYTHEREUM_TOKEN_ID.toString();
-      const tokenAddress = MYTHEREUM_ADDRESS;
+  //     test("it fails when expiration time exceeds six months", async () => {
+  //       const accountAddress = ALEX_ADDRESS;
+  //       const paymentTokenAddress = manaAddress;
+  //       const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //       const tokenAddress = MYTHEREUM_ADDRESS;
 
-      const expirationDate = new Date();
+  //       const expirationDate = new Date();
 
-      expirationDate.setMonth(expirationDate.getMonth() + 7);
+  //       expirationDate.setMonth(expirationDate.getMonth() + 7);
 
-      const expirationTime = Math.round(expirationDate.getTime() / 1000);
+  //       const expirationTime = Math.round(expirationDate.getTime() / 1000);
 
-      try {
-        await client._makeSellOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          buyerAddress: NULL_ADDRESS,
-          paymentTokenAddress,
-          waitForHighestBid: false,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          "Expiration time must not exceed six months from now"
-        );
-      }
+  //       try {
+  //         await client._makeSellOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           buyerAddress: NULL_ADDRESS,
+  //           paymentTokenAddress,
+  //           waitForHighestBid: false,
+  //           expirationTime,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include(
+  //           (error as Error).message,
+  //           "Expiration time must not exceed six months from now"
+  //         );
+  //       }
 
-      try {
-        await client._makeBuyOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          paymentTokenAddress,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          "Expiration time must not exceed six months from now"
-        );
-      }
-    });
+  //       try {
+  //         await client._makeBuyOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           paymentTokenAddress,
+  //           expirationTime,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include(
+  //           (error as Error).message,
+  //           "Expiration time must not exceed six months from now"
+  //         );
+  //       }
+  //     });
 
-    test("it handles expiration time duration correctly", async () => {
-      const accountAddress = ALEX_ADDRESS;
-      const paymentTokenAddress = manaAddress;
-      const tokenId = MYTHEREUM_TOKEN_ID.toString();
-      const tokenAddress = MYTHEREUM_ADDRESS;
+  //     test("it handles expiration time duration correctly", async () => {
+  //       const accountAddress = ALEX_ADDRESS;
+  //       const paymentTokenAddress = manaAddress;
+  //       const tokenId = MYTHEREUM_TOKEN_ID.toString();
+  //       const tokenAddress = MYTHEREUM_ADDRESS;
 
-      // Added buffer
-      const listingTime = Math.floor(new Date().getTime() / 1000) + 60;
+  //       // Added buffer
+  //       const listingTime = Math.floor(new Date().getTime() / 1000) + 60;
 
-      // 10 minutes after
-      const expirationTime = listingTime + 600;
+  //       // 10 minutes after
+  //       const expirationTime = listingTime + 600;
 
-      try {
-        await client._makeSellOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          buyerAddress: NULL_ADDRESS,
-          paymentTokenAddress,
-          waitForHighestBid: false,
-          listingTime,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          `Expiration time must be at least 15 minutes from the listing date`
-        );
-      }
+  //       try {
+  //         await client._makeSellOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           buyerAddress: NULL_ADDRESS,
+  //           paymentTokenAddress,
+  //           waitForHighestBid: false,
+  //           listingTime,
+  //           expirationTime,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include(
+  //           (error as Error).message,
+  //           `Expiration time must be at least 15 minutes from the listing date`
+  //         );
+  //       }
 
-      try {
-        await client._makeBuyOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          paymentTokenAddress,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          `Expiration time must be at least 15 minutes from the listing date`
-        );
-      }
+  //       try {
+  //         await client._makeBuyOrder({
+  //           asset: { tokenAddress, tokenId },
+  //           quantity: 1,
+  //           accountAddress,
+  //           startAmount: 2,
+  //           extraBountyBasisPoints: 0,
+  //           paymentTokenAddress,
+  //           expirationTime,
+  //         });
+  //         assert.fail();
+  //       } catch (error) {
+  //         assert.include(
+  //           (error as Error).message,
+  //           `Expiration time must be at least 15 minutes from the listing date`
+  //         );
+  //       }
 
-      const twentyMinuteExpirationTime = expirationTime + 600;
+  //       const twentyMinuteExpirationTime = expirationTime + 600;
 
-      const sellOrder = await client._makeSellOrder({
-        asset: { tokenAddress, tokenId },
-        quantity: 1,
-        accountAddress,
-        startAmount: 2,
-        extraBountyBasisPoints: 0,
-        buyerAddress: NULL_ADDRESS,
-        paymentTokenAddress,
-        waitForHighestBid: false,
-        listingTime,
-        // 20 minutes after listing time
-        expirationTime: twentyMinuteExpirationTime,
-      });
+  //       const sellOrder = await client._makeSellOrder({
+  //         asset: { tokenAddress, tokenId },
+  //         quantity: 1,
+  //         accountAddress,
+  //         startAmount: 2,
+  //         extraBountyBasisPoints: 0,
+  //         buyerAddress: NULL_ADDRESS,
+  //         paymentTokenAddress,
+  //         waitForHighestBid: false,
+  //         listingTime,
+  //         // 20 minutes after listing time
+  //         expirationTime: twentyMinuteExpirationTime,
+  //       });
 
-      assert.equal(
-        sellOrder["expirationTime"].toNumber(),
-        twentyMinuteExpirationTime
-      );
+  //       assert.equal(
+  //         sellOrder["expirationTime"].toNumber(),
+  //         twentyMinuteExpirationTime
+  //       );
 
-      const buyOrder = await client._makeBuyOrder({
-        asset: { tokenAddress, tokenId },
-        quantity: 1,
-        accountAddress,
-        startAmount: 2,
-        extraBountyBasisPoints: 0,
-        paymentTokenAddress,
-        expirationTime: twentyMinuteExpirationTime,
-      });
+  //       const buyOrder = await client._makeBuyOrder({
+  //         asset: { tokenAddress, tokenId },
+  //         quantity: 1,
+  //         accountAddress,
+  //         startAmount: 2,
+  //         extraBountyBasisPoints: 0,
+  //         paymentTokenAddress,
+  //         expirationTime: twentyMinuteExpirationTime,
+  //       });
 
-      assert.equal(
-        buyOrder["expirationTime"].toNumber(),
-        twentyMinuteExpirationTime
-      );
-    });
-  });
+  //       assert.equal(
+  //         buyOrder["expirationTime"].toNumber(),
+  //         twentyMinuteExpirationTime
+  //       );
+  //     });
+  //   });
 });
 
 async function testMatchingOrder(

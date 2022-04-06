@@ -648,93 +648,93 @@ suite("SDK: bundles", () => {
       }
     });
 
-    test("it handles expiration time duration correctly", async () => {
-      const accountAddress = ALEX_ADDRESS;
-      const paymentTokenAddress = manaAddress;
-      const tokenId = MYTHEREUM_TOKEN_ID.toString();
-      const tokenAddress = MYTHEREUM_ADDRESS;
+    // test("it handles expiration time duration correctly", async () => {
+    //   const accountAddress = ALEX_ADDRESS;
+    //   const paymentTokenAddress = manaAddress;
+    //   const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    //   const tokenAddress = MYTHEREUM_ADDRESS;
 
-      // Added buffer
-      const listingTime = Math.floor(new Date().getTime() / 1000) + 60;
+    //   // Added buffer
+    //   const listingTime = Math.floor(new Date().getTime() / 1000) + 60;
 
-      // 10 minutes after
-      const expirationTime = listingTime + 600;
+    //   // 10 minutes after
+    //   const expirationTime = listingTime + 600;
 
-      try {
-        await client._makeSellOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          buyerAddress: NULL_ADDRESS,
-          paymentTokenAddress,
-          waitForHighestBid: false,
-          listingTime,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          `Expiration time must be at least 15 minutes from the listing date`
-        );
-      }
+    //   try {
+    //     await client._makeSellOrder({
+    //       asset: { tokenAddress, tokenId },
+    //       quantity: 1,
+    //       accountAddress,
+    //       startAmount: 2,
+    //       extraBountyBasisPoints: 0,
+    //       buyerAddress: NULL_ADDRESS,
+    //       paymentTokenAddress,
+    //       waitForHighestBid: false,
+    //       listingTime,
+    //       expirationTime,
+    //     });
+    //     assert.fail();
+    //   } catch (error) {
+    //     assert.include(
+    //       (error as Error).message,
+    //       `Expiration time must be at least 15 minutes from the listing date`
+    //     );
+    //   }
 
-      try {
-        await client._makeBuyOrder({
-          asset: { tokenAddress, tokenId },
-          quantity: 1,
-          accountAddress,
-          startAmount: 2,
-          extraBountyBasisPoints: 0,
-          paymentTokenAddress,
-          expirationTime,
-        });
-        assert.fail();
-      } catch (error) {
-        assert.include(
-          (error as Error).message,
-          `Expiration time must be at least 15 minutes from the listing date`
-        );
-      }
+    //   try {
+    //     await client._makeBuyOrder({
+    //       asset: { tokenAddress, tokenId },
+    //       quantity: 1,
+    //       accountAddress,
+    //       startAmount: 2,
+    //       extraBountyBasisPoints: 0,
+    //       paymentTokenAddress,
+    //       expirationTime,
+    //     });
+    //     assert.fail();
+    //   } catch (error) {
+    //     assert.include(
+    //       (error as Error).message,
+    //       `Expiration time must be at least 15 minutes from the listing date`
+    //     );
+    //   }
 
-      const twentyMinuteExpirationTime = expirationTime + 600;
+    //   const twentyMinuteExpirationTime = expirationTime + 600;
 
-      const sellOrder = await client._makeSellOrder({
-        asset: { tokenAddress, tokenId },
-        quantity: 1,
-        accountAddress,
-        startAmount: 2,
-        extraBountyBasisPoints: 0,
-        buyerAddress: NULL_ADDRESS,
-        paymentTokenAddress,
-        waitForHighestBid: false,
-        listingTime,
-        // 20 minutes after listing time
-        expirationTime: twentyMinuteExpirationTime,
-      });
+    //   const sellOrder = await client._makeSellOrder({
+    //     asset: { tokenAddress, tokenId },
+    //     quantity: 1,
+    //     accountAddress,
+    //     startAmount: 2,
+    //     extraBountyBasisPoints: 0,
+    //     buyerAddress: NULL_ADDRESS,
+    //     paymentTokenAddress,
+    //     waitForHighestBid: false,
+    //     listingTime,
+    //     // 20 minutes after listing time
+    //     expirationTime: twentyMinuteExpirationTime,
+    //   });
 
-      assert.equal(
-        sellOrder["expirationTime"].toNumber(),
-        twentyMinuteExpirationTime
-      );
+    //   assert.equal(
+    //     sellOrder["expirationTime"].toNumber(),
+    //     twentyMinuteExpirationTime
+    //   );
 
-      const buyOrder = await client._makeBuyOrder({
-        asset: { tokenAddress, tokenId },
-        quantity: 1,
-        accountAddress,
-        startAmount: 2,
-        extraBountyBasisPoints: 0,
-        paymentTokenAddress,
-        expirationTime: twentyMinuteExpirationTime,
-      });
+    //   const buyOrder = await client._makeBuyOrder({
+    //     asset: { tokenAddress, tokenId },
+    //     quantity: 1,
+    //     accountAddress,
+    //     startAmount: 2,
+    //     extraBountyBasisPoints: 0,
+    //     paymentTokenAddress,
+    //     expirationTime: twentyMinuteExpirationTime,
+    //   });
 
-      assert.equal(
-        buyOrder["expirationTime"].toNumber(),
-        twentyMinuteExpirationTime
-      );
-    });
+    //   assert.equal(
+    //     buyOrder["expirationTime"].toNumber(),
+    //     twentyMinuteExpirationTime
+    //   );
+    // });
   });
 });
 
