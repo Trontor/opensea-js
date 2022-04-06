@@ -983,7 +983,7 @@ export class OpenSeaSDK {
       throw new Error("Payment token required");
     }
 
-    const order = await this._makeBuyOrder({
+    const order = await this._makeBuyOrderNew({
       asset,
       collection,
       quantity,
@@ -1017,6 +1017,125 @@ export class OpenSeaSDK {
       ...signature,
     };
     return orderWithSignature;
+  }
+
+  public async _makeBuyOrder({
+    asset,
+    quantity,
+    accountAddress,
+    startAmount,
+    expirationTime = getMaxOrderExpirationTimestamp(),
+    paymentTokenAddress,
+    extraBountyBasisPoints = 0,
+    sellOrder,
+    referrerAddress,
+  }: {
+    asset: Asset;
+    quantity: number;
+    accountAddress: string;
+    startAmount: number;
+    expirationTime?: number;
+    paymentTokenAddress: string;
+    extraBountyBasisPoints: number;
+    sellOrder?: UnhashedOrder;
+    referrerAddress?: string;
+  }): Promise<UnhashedOrder> {
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    const schema = this._getSchema(this._getSchemaName(asset));
+    const quantityBN = WyvernProtocol.toBaseUnitAmount(
+      makeBigNumber(quantity),
+      asset.decimals || 0
+    );
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN);
+
+    const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset);
+
+    const taker = sellOrder ? sellOrder.maker : NULL_ADDRESS;
+
+    const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
+      await this.computeFees({
+        asset: openSeaAsset,
+        extraBountyBasisPoints,
+        side: OrderSide.Buy,
+      });
+
+    const {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      feeRecipient,
+      feeMethod,
+    } = this._getBuyFeeParameters(
+      totalBuyerFeeBasisPoints,
+      totalSellerFeeBasisPoints,
+      sellOrder
+    );
+
+    const { target, calldata, replacementPattern } = encodeBuy(
+      schema,
+      wyAsset,
+      accountAddress,
+      sellOrder?.waitingForBestCounterOrder
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
+    );
+
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(
+      OrderSide.Buy,
+      paymentTokenAddress,
+      expirationTime,
+      startAmount
+    );
+    const times = this._getTimeParameters({
+      expirationTimestamp: expirationTime,
+    });
+
+    const { staticTarget, staticExtradata } =
+      await this._getStaticCallTargetAndExtraData({
+        asset: openSeaAsset,
+        useTxnOriginStaticCall: false,
+      });
+
+    return {
+      exchange:
+        this._wyvernConfigOverride?.wyvernExchangeContractAddress ||
+        WyvernProtocol.getExchangeContractAddress(this._networkName),
+      maker: accountAddress,
+      taker,
+      quantity: quantityBN,
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      waitingForBestCounterOrder: false,
+      feeMethod,
+      feeRecipient,
+      side: OrderSide.Buy,
+      saleKind: SaleKind.FixedPrice,
+      target,
+      howToCall:
+        target === merkleValidatorByNetwork[this._networkName]
+          ? HowToCall.DelegateCall
+          : HowToCall.Call,
+      calldata,
+      replacementPattern,
+      staticTarget,
+      staticExtradata,
+      paymentToken,
+      basePrice,
+      extra,
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: {
+        asset: wyAsset,
+        schema: schema.name as WyvernSchemaName,
+        referrerAddress,
+      },
+    };
   }
 
   /**
@@ -3152,7 +3271,7 @@ export class OpenSeaSDK {
     return makeBigNumber(approved);
   }
 
-  public async _makeBuyOrder({
+  public async _makeBuyOrderNew({
     asset,
     collection,
     quantity,
